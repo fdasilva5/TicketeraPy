@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div class="container d-flex justify-content-center">  <!-- Centrado horizontal -->
+  <div class="col-md-6">  <!-- Ajustar el ancho del contenido -->
+    <div class="card p-4 mt-5">  <!-- Card con margen-top -->
+    
+      {% if form.errors %}
+        <div class="alert alert-danger">
+          Su nombre de usuario y contraseña no coinciden. Inténtalo de nuevo.
+        </div>
+      {% endif %}
+  
+      {% if next %}
+        {% if user.is_authenticated %}
+          <div class="alert alert-warning">
+            Su cuenta no tiene acceso a esta página.
+            Para continuar, inicie sesión con una cuenta que tenga acceso.
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            Por favor inicie sesión para ver esta página.
+          </div>
+        {% endif %}
+      {% endif %}
+  
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="id_username">{{ form.username.label }}</label>
+          {{ form.username }}  <!-- Campo de entrada de usuario -->
+        </div>
+  
+        <div class="mb-3">
+          <label for="id_password">{{ form.password.label }}</label>
+          {{ form.password }}  <!-- Campo de entrada de contraseña -->
+        </div>
+  
+        <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+        <input type="hidden" name="next" value="{{ next }}">  <!-- Para redireccionamiento -->
+      </form>
+  
+    </div>
+  </div>
+</div>
+{% endblock %}
