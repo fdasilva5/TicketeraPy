@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-6 offset-lg-3">
+            <h1>{{ "Editar Pedido" }}</h1> 
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 offset-lg-3">
+            <form class="vstack gap-3 {% if errors %} was-validated {% endif %}"
+                method="POST"
+                action="{% url 'pedidos_edit' id=pedido.id %}"
+                novalidate>
+
+                {% csrf_token %}
+
+                <input type="hidden" value="{{ pedido.id }}" name="id" />  <!-- ID del pedido -->
+                
+                <div class="mb-3">
+                    <label for="comentario" class="form-label">Comentario</label>
+                    <input type="text"
+                        id="comentario"
+                        name="comentario"
+                        value="{{ pedido.comentario }}"
+                        class="form-control"
+                        required/>
+
+                    {% if errors.comentario %}
+                        <div class="invalid-feedback">
+                            {{ errors.comentario }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select id="categoria" name="categoria" class="form-select" required>
+                        <option value="">Selecciona una categoría</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}" {% if categoria.id == pedido.categoria.id %}selected{% endif %}>{{ categoria.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                
+                    {% if errors.categoria %}
+                        <div class="invalid-feedback">
+                            {{ errors.categoria }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="tecnico" class="form-label">Técnico</label>
+                    <select id="tecnico" name="tecnico" class="form-select" required>
+                        <option value="">Selecciona un técnico</option>
+                        {% for tecnico in tecnicos %}
+                            <option value="{{ tecnico.id }}" {% if tecnico.id == pedido.tecnico.id %}selected{% endif %}>{{ tecnico.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                
+                    {% if errors.tecnico %}
+                        <div class="invalid-feedback">
+                            {{ errors.tecnico }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select id="estado" name="estado" class="form-select" required>
+                        <option value="">Selecciona un estado</option>
+                        {% for estado in estados %}
+                            <option value="{{ estado.id }}" {% if estado.id == pedido.estado.id %}selected{% endif %}>{{ estado.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                
+                    {% if errors.estado %}
+                        <div class="invalid-feedback">
+                            {{ errors.estado }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="comenTecnico" class="form-label">Comentario Técnico</label>
+                    <textarea id="comenTecnico" name="comenTecnico" class="form-control" rows="3" required>{{ pedido.comenTecnico }}</textarea>
+                
+                    {% if errors.comenTecnico %}
+                        <div class="invalid-feedback">
+                            {{ errors.comenTecnico }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

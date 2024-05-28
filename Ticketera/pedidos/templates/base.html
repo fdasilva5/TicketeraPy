@@ -10,8 +10,22 @@
 <body data-bs-theme="dark">
     {% include "partials/navbar.html" %}
     <main class="mt-5">
-        {% block main %}{% endblock %}
+        {% block main %}
+            <div class="container mt-4">
+                <h1 class="mb-4">
+                    <i class="bi bi-tools"></i> Pedidos
+                </h1>
+                <!-- Resto del contenido -->
+            </div>
+        {% endblock %}
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <br/>
+    <br/>
+    <footer class="text-center mt-5 py-3">
+        <p>Ante cualquier consulta enviar un mail a: 
+            <a href="https://mail.psico.unlp.edu.ar/">soporte@psico.unlp.edu.ar</a>
+        </p>
+    </footer>
 </body>
 </html>

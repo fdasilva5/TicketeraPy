@@ -1,155 +1,106 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 def validate_pedido(data):
     errors = {}
-
     comentario = data.get("comentario", "")
-    prioridad = data.get("prioridad", "")
-    area_id = data.get("area_id", "")
-    empleado_id = data.get("empleado_id","")
+    categoria_id = data.get("categoria_id", "")  # Obtener el ID de la categoría
 
-    if comentario == "":
+    if not comentario:
         errors["comentario"] = "Por favor ingrese un comentario"
-    if prioridad == "":
-        errors["prioridad"] = "Por favor ingrese la prioridad del pedido"
-    if area_id == "":
-        errors["area_id"] = "Por favor ingrese el area de trabajo"
-    if empleado_id == "":
-        errors["empleado_id"] = "Por favor ingrese el empleado que realiza el pedido"
+    if not categoria_id:  # Verificar si el ID de la categoría está vacío
+        errors["categoria"] = "Por favor seleccione una categoría"
     
     return errors
-
-
 
 class Tecnico(models.Model):
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=15)
 
     def __str__(self):
-        return self.nombre
+        return f"{self.nombre} {self.apellido}"
 
-    @classmethod
-    def save_tecnico(cls, tecnico_data):
-        
-        Tecnico.objects.create(
-            nombre=tecnico_data.get("nombre"),
-            apellido=tecnico_data.get("apellido")
-        )
-
-        return True, None
-
-    def update_tecnico(self, tecnico_data):
-        self.nombre = tecnico_data.get("nombre", "") or self.nombre
-        self.apellido = tecnico_data.get("apellido", "") or self.apellido
-
-        self.save()
-
-
-class Area(models.Model):
+class Estado(models.Model):
     nombre = models.CharField(max_length=100)
-    
+
     def __str__(self):
         return self.nombre
 
-    @classmethod
-    def save_area(cls, area_data):
-        
-        Area.objects.create(
-            nombre=area_data.get("area"),
-        )
-
-        return True, None
-
-    def update_area(self, area_data):
-        self.nombre = area_data.get("nombre", "") or self.nombre
-
-        self.save()
-
-class Empleado(models.Model):
+class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
-    apellido = models.CharField(max_length=15)
-    area = models.ForeignKey('Area', on_delete=models.PROTECT)
 
     def __str__(self):
         return self.nombre
-    
-   
-    @classmethod
-    def save_empleado(cls, empleado_data):
-
-        area = Area.objects.get(id=empleado_data.get("area_id"))
-       
-        Empleado.objects.create(
-            nombre=empleado_data.get("nombre"),
-            apellido=empleado_data.get("apellido"),
-            area=area,
-        )
-
-        return True, None
-
-    def update_empleado(self, empleado_data):
-        self.nombre = empleado_data.get("nombre", "") or self.nombre
-        self.apellido = empleado_data.get("apellido", "") or self.apellido
-
-        self.save()
-
 
 class Pedido(models.Model):
     comentario = models.CharField(max_length=100)
-    prioridad = models.CharField(max_length=15)
-    estado = models.CharField(max_length=15,default="pendiente")
-    comenTecnico = models.CharField(max_length=100, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pedidos",blank=True)
+    comenTecnico = models.CharField(max_length=100, blank=True, null=True)
+    estado = models.ForeignKey('Estado', on_delete=models.PROTECT, default=1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pedidos")
+    tecnico = models.ForeignKey('Tecnico', on_delete=models.SET_NULL, null=True, blank=True)
+    categoria = models.ForeignKey('Categoria', on_delete=models.CASCADE, related_name="pedidos")
+    fechaCreacion = models.DateField()
 
-
-    area = models.ForeignKey('Area', on_delete=models.PROTECT)
-    tecnico = models.ForeignKey('Tecnico', on_delete=models.SET_NULL, null=True,blank=True )
-    empleado = models.ForeignKey('Empleado', on_delete=models.PROTECT)
-    
     def __str__(self):
-        return f"{self.area} {self.estado}"
+        return f"{self.user} - {self.estado}"
 
     @classmethod
     def save_pedido(cls, pedido_data):
-        errors = validate_pedido(pedido_data)  # Validar datos del pedido
-
-        if len(errors):
+        errors = validate_pedido(pedido_data)
+        if errors:
             return False, errors
 
-        # Obtener el área, técnico y empleado desde los datos
-        area = Area.objects.get(id=pedido_data.get("area_id"))
-        empleado = Empleado.objects.get(id=pedido_data.get("empleado_id"))
-        user = pedido_data.get("user")
-        
-        if(user != area):
-            return False
+        try:
+            estado = Estado.objects.get(id=pedido_data.get("estado_id"))
+        except Estado.DoesNotExist:
+            errors["estado"] = "Estado no existe"
+            return False, errors
 
-        # Crear el pedido
+        try:
+            categoria = Categoria.objects.get(id=pedido_data.get("categoria_id"))
+        except Categoria.DoesNotExist:
+            errors["categoria"] = "Categoria no existe"
+            return False, errors
+
+        tecnico = None
+        if pedido_data.get("tecnico_id"):
+            try:
+                tecnico = Tecnico.objects.get(id=pedido_data.get("tecnico_id"))
+            except Tecnico.DoesNotExist:
+                errors["tecnico"] = "Tecnico no existe"
+                return False, errors
+
+        user = pedido_data.get("user")
+
         Pedido.objects.create(
             comentario=pedido_data.get("comentario"),
-            prioridad=pedido_data.get("prioridad"),
-            area=area,
-            empleado=empleado,
-            user =user
+            fechaCreacion=pedido_data.get("fechaCreacion"),
+            comenTecnico=pedido_data.get("comenTecnico"),
+            estado=estado,
+            categoria=categoria,
+            tecnico=tecnico,
+            user=user
         )
 
         return True, None
 
-
-    # Función para actualizar un pedido existente
     def update_pedido(self, pedido_data):
-        self.comentario = pedido_data.get("comentario", "") or self.comentario
-        self.prioridad = pedido_data.get("prioridad", "") or self.prioridad
-        self.estado = pedido_data.get("estado", "") or self.estado
-        self.comenTecnico = pedido_data.get("comenTecnico", "") or self.comenTecnico
-        
-        if "area_id" in pedido_data:
-            self.area = Area.objects.get(id=pedido_data.get("area_id")) or self.area
+        self.comentario = pedido_data.get("comentario", self.comentario)
+        self.comenTecnico = pedido_data.get("comenTecnico", self.comenTecnico)
+
         if "tecnico_id" in pedido_data:
-            self.tecnico = Tecnico.objects.get(id=pedido_data.get("tecnico_id")) or self.tecnico
-        if "empleado_id" in pedido_data:
-            self.empleado = Empleado.objects.get(id=pedido_data.get("empleado_id")) or self.empleado
+            tecnico_id = pedido_data.get("tecnico_id")
+            if tecnico_id:
+                self.tecnico = Tecnico.objects.get(id=tecnico_id)
+
+        if "estado_id" in pedido_data:
+            estado_id = pedido_data.get("estado_id")
+            if estado_id:
+                self.estado = Estado.objects.get(id=estado_id)
+
+        if "categoria_id" in pedido_data:
+            categoria_id = pedido_data.get("categoria_id")
+            if categoria_id:
+                self.categoria = Categoria.objects.get(id=categoria_id)
 
         self.save()

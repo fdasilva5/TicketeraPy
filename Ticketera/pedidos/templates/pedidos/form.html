@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-lg-6 offset-lg-3">
-            <h1>{{ "Nuevo Pedido" }}</h1>  <!-- Título dinámico -->
+            <h1>{{ "Nuevo Pedido" }}</h1> 
         </div>
     </div>
 
@@ -18,7 +18,8 @@
                 {% csrf_token %}
 
                 <input type="hidden" value="{{ pedido.id }}" name="id" />  <!-- ID del pedido -->
-                <div>
+                
+                <div class="mb-3">
                     <label for="comentario" class="form-label">Comentario</label>
                     <input type="text"
                         id="comentario"
@@ -33,63 +34,27 @@
                         </div>
                     {% endif %}
                 </div>
-
-                <div>
-                    <label for="prioridad" class="form-label">Prioridad</label>
-                    <input type="text"
-                        id="prioridad"
-                        name="prioridad"
-                        value="{{pedido.prioridad}}"
-                        class="form-control"
-                        required/>
-
-                    {% if errors.prioridad %}
-                        <div class="invalid-feedback">
-                            {{ errors.prioridad }}
-                        </div>
-                    {% endif %}
-                </div>
-
                 
                 <div class="mb-3">
-                    <label for="area" class="form-label">Área</label>
-                    <select id="area" name="area_id" class="form-control" required>  <!-- Área como desplegable -->
-                        <option value="">-- Seleccione un área --</option>
-                        {% for area in areas %}
-                            <option value="{{ area.id }}"
-                                    {% if pedido and pedido.area.id == area.id %} selected {% endif %}>
-                                {{ area.nombre }}
-                            </option>
-                            
+                    <label for="categoria" class="form-label">Categoría</label>
+                    <select id="categoria" name="categoria" class="form-select" required>
+                        <option value="">Selecciona una categoría</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
                         {% endfor %}
                     </select>
-                    {% if errors.area %}
+                
+                    {% if errors.categoria %}
                         <div class="invalid-feedback">
-                            {{ errors.area }}
+                            {{ errors.categoria }}
                         </div>
                     {% endif %}
                 </div>
+                
 
-                <div class="mb-3">
-                    <label for="empleado" class="form-label">Empleado</label>
-                    <select id="empleado" name="empleado_id" class="form-control" required>  <!-- Empleado basado en el área -->
-                        <option value="">-- Seleccione un empleado --</option>
-                        {% for empleado in empleados %}
-                            <option value="{{ empleado.id }}"
-                                    {% if pedido and pedido.empleado.id == empleado.id %} selected {% endif %}>
-                                {{ empleado.nombre }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    {% if errors.empleado %}
-                        <div class="invalid-feedback">
-                            {{ errors.empleado }}
-                        </div>
-                    {% endif %}
-                </div>
 
-                <!-- Otros campos del formulario -->
-
+                                
+              
                 <button type="submit" class="btn btn-primary">Guardar</button>
             </form>
         </div>
