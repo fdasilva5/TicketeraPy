@@ -1,22 +1,27 @@
 from datetime import date
-from django.http import HttpResponseBadRequest, JsonResponse
+from threading import Thread
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.views import View
 from .models import Pedido,Tecnico, Categoria, Estado, User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 from django.core.mail import send_mail
 
 
+#Enviar mail en segundo plano
+def send_mail_thread(subject, message, from_email, recipient_list):
+    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
 @login_required
 def send_mail_view(request):
-    send_mail(
-        'Nuevo pedido',
-        'Hola, tenes un nuevo pedido en la ticketera',
-        settings.EMAIL_HOST_USER,
-        ['soporte@psico.unlp.edu.ar'],
-        fail_silently=False
-    )
+    subject = 'Nuevo pedido'
+    message = 'Hola, tenes un nuevo pedido en la ticketera'
+    from_email = settings.EMAIL_HOST_USER
+    recipient_list = ['fdasilva@psico.unlp.edu.ar']
+    
+    #Ejecuta el envio de mail en segundo plano
+    email_thread = Thread(target=send_mail_thread, args=(subject, message, from_email, recipient_list))
+    email_thread.start()
+    
     return redirect('home')
 
 def admin_required(user):
@@ -26,6 +31,8 @@ def admin_required(user):
 @login_required
 def home(request):
     return render(request, "home.html")
+
+
 
 @login_required
 def pedidos_repository(request):

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+
 
 def validate_pedido(data):
     errors = {}
@@ -104,3 +106,5 @@ class Pedido(models.Model):
                 self.categoria = Categoria.objects.get(id=categoria_id)
 
         self.save()
+
+
