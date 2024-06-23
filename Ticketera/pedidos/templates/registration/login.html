@@ -36,7 +36,15 @@
           {{ form.password }}  <!-- Campo de entrada de contraseña -->
         </div>
   
-        <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+        {% if user.is_authenticated and user.must_change_password %}
+          <div class="alert alert-info">
+            Debe cambiar su contraseña para continuar.
+            <a href="{% url 'password_change' %}">Cambiar contraseña</a>
+          </div>
+        {% else %}
+          <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+        {% endif %}
+        
         <input type="hidden" name="next" value="{{ next }}">  <!-- Para redireccionamiento -->
       </form>
   

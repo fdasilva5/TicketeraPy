@@ -1,6 +1,8 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.shortcuts import redirect
 
 
 def validate_pedido(data):
@@ -38,7 +40,7 @@ class Pedido(models.Model):
     comentario = models.CharField(max_length=100)
     comenTecnico = models.CharField(max_length=100, blank=True, null=True)
     estado = models.ForeignKey('Estado', on_delete=models.PROTECT, default=1)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pedidos")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="pedidos")
     tecnico = models.ForeignKey('Tecnico', on_delete=models.SET_NULL, null=True, blank=True)
     categoria = models.ForeignKey('Categoria', on_delete=models.CASCADE, related_name="pedidos")
     fechaCreacion = models.DateField()
@@ -108,3 +110,26 @@ class Pedido(models.Model):
         self.save()
 
 
+class Oficina(AbstractUser):
+    must_change_password = models.BooleanField(default=True)
+    
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name=('groups'),
+        blank=True,
+        help_text=(
+            'The groups this user belongs to. A user will get all permissions '
+            'granted to each of their groups.'
+        ),
+        related_name='my_groups',
+        related_query_name='user',
+    )
+
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name=('user permissions'),
+        blank=True,
+        help_text=('Specific permissions for this user.'),
+        related_name='my_user_permissions',
+        related_query_name='user',
+    )
