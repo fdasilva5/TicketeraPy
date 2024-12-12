@@ -54,26 +54,51 @@ def home(request):
     else:
         return render(request, "home.html") 
 
-#Mostrar pedidos del usuario logueado 
+# Mostrar pedidos del usuario logueado
 @login_required
 def pedidos_repository(request):
-
     categoria_id = request.GET.get('categoria_id')
+    estado_id = request.GET.get('estado_id')
+    tecnico_id = request.GET.get('tecnico_id', '')
+    pedido_id = request.GET.get('pedido_id')
+    limpiar = request.GET.get('limpiar')
+
+    pedidos = Pedido.objects.filter(user=request.user).order_by('fechaCreacion')
+
     if categoria_id:
-        pedidos = Pedido.objects.filter(user=request.user, categoria_id=categoria_id)
-    else:
-        pedidos = Pedido.objects.filter(user=request.user)
+        pedidos = pedidos.filter(categoria_id=categoria_id)
+
+    if estado_id:
+        pedidos = pedidos.filter(estado_id=estado_id)
+
+    if tecnico_id:
+        if tecnico_id == "sin_tecnico":
+            pedidos = pedidos.filter(tecnico_id=None)
+        else:
+            pedidos = pedidos.filter(tecnico_id=tecnico_id)
+
+    if pedido_id:
+        pedidos = pedidos.filter(id=pedido_id)
+    
+    
+    
+    #pedidos = pedidos.exclude(estado__nombre__in=['Hecho', 'Sin solucion'])
+    pedidos = pedidos.order_by('-id')
 
     categorias = Categoria.objects.all()
-
-    pedidos = pedidos.order_by('-id')
+    estados = Estado.objects.all()
+    tecnicos = Tecnico.objects.all()
 
     return render(request, "pedidos/repository.html", {
         "pedidos": pedidos,
         "categorias": categorias,
+        "estados": estados,
+        "tecnicos": tecnicos,
         "selected_categoria_id": categoria_id,
+        "selected_estado_id": estado_id,
+        "selected_tecnico_id": tecnico_id,
+        "selected_pedido_id": pedido_id,
     })
-
 
 #Mostrar pedidos de todos los usuarios solo al admin
 @login_required

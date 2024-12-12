@@ -22,7 +22,7 @@ class Tecnico(models.Model):
     apellido = models.CharField(max_length=15)
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido}"
+        return f"{self.nombre} {self.apellido}".strip()  # Elimina espacios extra al inicio y al final
 
 class Estado(models.Model):
     nombre = models.CharField(max_length=100)
@@ -46,7 +46,7 @@ class Pedido(models.Model):
     fechaCreacion = models.DateField()
 
     def __str__(self):
-        return f"{self.user} - {self.estado}"
+        return self.comentario  
 
     @classmethod
     def save_pedido(cls, pedido_data):
